@@ -1,11 +1,11 @@
-from dht import DHT22 # ändra till DHT11 under hardware
+from dht import DHT11 # ändra till DHT11 under hardware
 from machine import Pin, I2C
 from neopixel import NeoPixel
 from machine import ADC
 import time
 
 # DHT22 / ändra till DHT11 under hardware
-sensor = DHT22(Pin(16))
+sensor = DHT11(Pin(16))
 
 # WS2812
 NUM_LEDS = 8
@@ -73,7 +73,7 @@ i2c = I2C(
     0,
     sda=Pin(0),
     scl=Pin(1),
-    freq=400000
+    freq=100000
 )
 
 LCD_ADDR = 0x27
@@ -175,6 +175,15 @@ pump_on = False
 # Vatten i pump
 MIN_WATER_LEVEL = 20
 
+# För LCD
+def pad_line(text):
+    text = str(text)
+
+    if len(text) < 16:
+        text += " " * (16 - len(text))
+
+    return text[:16]
+
 # Start
 lcd_init()
 
@@ -249,19 +258,20 @@ while True:
         pump_led.off()
 
     # LCD
-    clear_lcd()
+    display_page = (time.ticks_ms() // 2000) % 2
 
-    # Rad 1 växlar mellan mätvärden
-    display_page = (time.ticks_ms() // 3000) % 2
-
+    # Rad 1
     set_cursor(0, 0)
 
     if display_page == 0:
-        write_text(f"T:{temperature:.1f}C H:{humidity:.0f}%")
+        line1 = f"T:{temperature:.1f}C H:{humidity:.0f}%"
     else:
-        write_text(f"S:{soil_percent}% W:{water_percent}%")
+        line1 = f"S:{soil_percent}% W:{water_percent}%"
 
-    # Rad 2 växlar mellan aktiva statusar
+    write_text(pad_line(line1))
+
+
+    # Rad 2
     status_messages = []
 
     if fan_on:
@@ -282,6 +292,8 @@ while True:
     status_index = (time.ticks_ms() // 2000) % len(status_messages)
 
     set_cursor(1, 0)
-    write_text(status_messages[status_index])
+
+    line2 = status_messages[status_index]
+    write_text(pad_line(line2))
 
     time.sleep(1)
