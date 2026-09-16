@@ -2,7 +2,21 @@ from dht import DHT11 # ändra till DHT11 under hardware
 from machine import Pin, I2C, ADC
 from neopixel import NeoPixel
 from wifi import connect_wifi
+from umqtt.simple import MQTTClient
+
 import time
+import json
+
+# MQTT
+TOPIC = b"greenhouse"
+# Ändra till IPv4-adressen för datorn där Mosquitto körs
+MQTT_BROKER = "192.168.1.95"
+
+def connect_mqtt():
+    client = MQTTClient(client_id="pico", server = MQTT_BROKER, port=1883)
+    client.connect()
+    print("Connected to MQTT")
+    return client
 
 # DHT22 / ändra till DHT11 under hardware
 sensor = DHT11(Pin(16))
@@ -196,6 +210,9 @@ set_cursor(1, 0)
 write_text(pad_line("Please wait..."))
 
 wifi_connected = connect_wifi()
+
+# MQTT-client skapas först efter WiFi
+client = None
 
 if wifi_connected:
     set_cursor(0, 0)
