@@ -304,6 +304,26 @@ while True:
     else:
         pump_led.off()
 
+    #MQTT data
+    data = {
+    "temperature": temperature,
+    "humidity": humidity,
+    "soil_moisture": soil_percent,
+    "water_level": water_percent,
+    "fan_on": fan_on,
+    "pump_on": pump_on
+    }
+
+    payload = json.dumps(data)
+
+    if client is not None:
+        try:
+            client.publish(TOPIC, payload)
+            print("Published:", payload)
+        except Exception as error:
+            print("MQTT publish failed:")
+            print(error)
+            
     # LCD
     display_page = (time.ticks_ms() // 2000) % 2
 
