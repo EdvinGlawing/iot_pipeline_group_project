@@ -10,7 +10,7 @@ import json
 # MQTT
 TOPIC = b"greenhouse"
 # Ändra till IPv4-adressen för datorn där Mosquitto körs
-MQTT_BROKER = "192.168.1.95"
+MQTT_BROKER = "172.20.10.2"
 
 def connect_mqtt():
     client = MQTTClient(client_id="pico", server = MQTT_BROKER, port=1883)
@@ -210,20 +210,26 @@ set_cursor(1, 0)
 write_text(pad_line("Please wait..."))
 
 wifi_connected = connect_wifi()
-
 # MQTT-client skapas först efter WiFi
 client = None
 
 if wifi_connected:
+
     set_cursor(0, 0)
     write_text(pad_line("WiFi connected"))
 
     set_cursor(1, 0)
-    write_text(pad_line("SYSTEM STARTING"))
+    write_text(pad_line("Connecting MQTT"))
+
+    client = connect_mqtt()
+
+    set_cursor(1, 0)
+    write_text(pad_line("MQTT connected"))
 
     time.sleep(2)
 
 else:
+
     set_cursor(0, 0)
     write_text(pad_line("WiFi failed"))
 
