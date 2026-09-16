@@ -184,6 +184,7 @@ pump_on = False
 # Vatten i pump
 MIN_WATER_LEVEL = 20
 
+
 # Start LCD
 lcd_init()
 
@@ -213,6 +214,7 @@ else:
     write_text(pad_line("EDGE MODE"))
 
     time.sleep(2)
+
 
 # Main loop
 while True:
