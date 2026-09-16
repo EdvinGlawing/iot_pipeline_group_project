@@ -24,3 +24,4 @@ def connect_wifi(waiting_time = 10):
         time.sleep(2)
 
     return wlan.isconnected()
+
