@@ -1,0 +1,8 @@
+[project]
+name = "src-pipeline"
+version = "0.1.0"
+description = "IoT-pipeline: Mosquitto -> consumer -> TimescaleDB -> Grafana"
+requires-python = ">=3.11"
+dependencies = [
+    "paho-mqtt>=2.1.0",
+]
