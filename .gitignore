@@ -217,4 +217,11 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
+
+# mac
+.DS_Store
+
 wifi_credentials.json
+
+.vscode
+.micropico

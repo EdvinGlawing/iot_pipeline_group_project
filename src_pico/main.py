@@ -10,7 +10,7 @@ import json
 # MQTT
 TOPIC = b"greenhouse"
 # Ändra till IPv4-adressen för datorn där Mosquitto körs
-MQTT_BROKER = "172.20.10.2"
+MQTT_BROKER = "10.199.57.185"
 
 def connect_mqtt():
     client = MQTTClient(client_id="pico", server = MQTT_BROKER, port=1883)
