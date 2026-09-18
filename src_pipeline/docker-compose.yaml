@@ -1,7 +1,69 @@
+# Infrastruktur för IoT-pipelinen: Mosquitto -> consumer -> TimescaleDB -> Grafana
+# Startas med: docker compose up -d
+
+# Allt under "services" är en tjänst = en container = ett "hus".
 services:
+
+  # ---------- Hus 1: MQTT-brokern ----------
   mosquitto:
-    container_name: mosquitto
-    image: eclipse-mosquitto
+    # Färdig avbildning som hämtas från Docker Hub. "2" är versionen.
+    image: eclipse-mosquitto:2
+
+    # Namnet som syns i "docker compose ps". Utan raden hittar Docker på ett.
+    container_name: pico_mosquitto
+
     ports:
+      # "utsidan:insidan" - 1883 på min dator når 1883 inuti containern.
       - "1883:1883"
-      
+
+    volumes:
+      # "./" = mapp på min disk. Matar in konfigfilen i containern.
+      # Ingen data sparas ut härifrån - Mosquitto lagrar inget eget.
+      - ./mosquitto/config:/mosquitto/config
+
+  # ---------- Hus 2: databasen ----------
+  timescaledb:
+    # Postgres med tillägg för tidsseriedata. pg16 låser Postgres-versionen.
+    image: timescale/timescaledb:latest-pg16
+    container_name: pico_timescaledb
+
+    ports:
+      # Postgres standardport. Krockar den, ändra vänstersidan till 5433.
+      - "5432:5432"
+
+    environment:
+      # Läses bara FÖRSTA gången, när volymen nedan är tom.
+      # Skapar användare, lösenord och en tom databas.
+      POSTGRES_USER: pico
+      POSTGRES_PASSWORD: pico_dev_password
+      POSTGRES_DB: sensordata
+
+    volumes:
+      # Inget "./" = namngiven volym som Docker äger.
+      # Utan den försvinner alla mätvärden vid omstart.
+      - timescale_data:/var/lib/postgresql/data
+
+  # ---------- Hus 3: visualiseringen ----------
+  grafana:
+    # "oss" = open source-varianten, gratis.
+    image: grafana/grafana-oss:latest
+    container_name: pico_grafana
+
+    ports:
+      # Webbgränssnittet nås på http://localhost:3000
+      - "3000:3000"
+
+    volumes:
+      # Sparar dashboards och inloggning. Utan den får jag bygga om allt varje gång.
+      - grafana_data:/var/lib/grafana
+
+    depends_on:
+      # Starta efter databasen.
+      # OBS: väntar bara på att containern startat, inte att den svarar.
+      - timescaledb
+
+# Egen rubrik, i linje med "services".
+# Här registreras de namngivna volymerna innan de får användas ovan.
+volumes:
+  timescale_data:
+  grafana_data:
