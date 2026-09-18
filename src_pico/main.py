@@ -8,7 +8,7 @@ import time
 import json
 
 # MQTT
-TOPIC = b"greenhouse"
+TOPIC = b"greenhouse/data"
 # Ändra till IPv4-adressen för datorn där Mosquitto körs
 MQTT_BROKER = "10.199.57.185"
 
