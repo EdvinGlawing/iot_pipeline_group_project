@@ -1,5 +1,6 @@
 # Infrastruktur för IoT-pipelinen: Mosquitto -> consumer -> TimescaleDB -> Grafana
-# Startas med: docker compose up -d
+# Startas med: docker compose up -d --build
+# Delvis framtagen med hjälp av LLM, genomgången och förstådd av gruppen.
 
 # Allt under "services" är en tjänst = en container = ett "hus".
 services:
@@ -43,6 +44,10 @@ services:
       # Utan den försvinner alla mätvärden vid omstart.
       - timescale_data:/var/lib/postgresql/data
 
+      # Postgres kör automatiskt SQL-filer i denna mapp vid första start,
+      # så tabellen skapas av sig själv. Bara när volymen ovan är tom.
+      - ./init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+
   # ---------- Hus 3: visualiseringen ----------
   grafana:
     # "oss" = open source-varianten, gratis.
@@ -61,6 +66,28 @@ services:
       # Starta efter databasen.
       # OBS: väntar bara på att containern startat, inte att den svarar.
       - timescaledb
+
+  # ---------- Hus 4: consumern ----------
+  consumer:
+    # "build" istället för "image" - byggs från vår egen Dockerfile.
+    # context "." = mappen där denna fil ligger (src_pipeline).
+    build:
+      context: .
+      dockerfile: dockerfiles/consumer.dockerfile
+    container_name: pico_consumer
+
+    environment:
+      # Inne i Dockers nätverk nås tjänsterna på sina namn, inte localhost.
+      MQTT_BROKER: mosquitto
+      DB_HOST: timescaledb
+
+    depends_on:
+      - mosquitto
+      - timescaledb
+
+    # Startar om consumern automatiskt om den kraschar,
+    # t.ex. om brokern inte hunnit bli redo vid start.
+    restart: unless-stopped
 
 # Egen rubrik, i linje med "services".
 # Här registreras de namngivna volymerna innan de får användas ovan.
