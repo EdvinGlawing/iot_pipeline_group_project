@@ -12,12 +12,16 @@ from datetime import datetime, timezone
 import paho.mqtt.client as mqtt
 import psycopg
 
-BROKER = "localhost"
-PORT = 1883
+import os
+
+# Adresser läses från miljövariabler. I containern sätts de i
+# docker-compose.yaml; utanför används localhost som standard.
+BROKER = os.getenv("MQTT_BROKER", "localhost")
+PORT = int(os.getenv("MQTT_PORT", "1883"))
 TOPIC = "greenhouse/data"
 
-# Anslutningssträng till databasen. Värdena kommer från docker-compose.yaml.
-DB_CONNECTION = "host=localhost port=5432 dbname=sensordata user=pico password=pico_dev_password"
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_CONNECTION = f"host={DB_HOST} port=5432 dbname=sensordata user=pico password=pico_dev_password"
 
 # SQL-satsen som skriver en rad. %s är platshållare som fylls i av
 # psycopg - aldrig genom strängkonkatenering (det öppnar för SQL-injektion).
